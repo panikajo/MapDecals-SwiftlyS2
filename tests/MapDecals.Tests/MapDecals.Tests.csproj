@@ -7,6 +7,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/Plugin/Diagnostics/DiagnosticLog.cs" Link="DiagnosticLog.cs" />
     <Compile Include="../../src/Plugin/Functions/DecalRules.cs" Link="DecalRules.cs" />
     <Compile Include="../../src/Plugin/Database/Migrations/M001_InitTable.cs" Link="M001_InitTable.cs" />
     <PackageReference Include="Dapper" Version="2.1.89" />

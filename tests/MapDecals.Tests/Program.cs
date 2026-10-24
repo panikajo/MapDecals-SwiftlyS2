@@ -62,5 +62,43 @@ try
     Check(connection.QuerySingle<long>("SELECT COUNT(*) FROM cc_mapdecals") == 0, "empty after delete");
 }
 finally { SqliteConnection.ClearAllPools(); if (File.Exists(db)) File.Delete(db); }
-Console.WriteLine($"PASS: {assertions} assertions (validation, pagination, visibility, SQLite migration/CRUD).");
+// Diagnostic paths must remain relative; checks must not silently rewrite actual config.
+Check(DiagnosticPaths.CompiledMaterial("materials/mapdecals/2.vmat") == "materials/mapdecals/2.vmat_c", "compiled material suffix");
+Check(DiagnosticPaths.CompiledMaterial(@"materials\mapdecals\2.vmat") == "materials/mapdecals/2.vmat_c", "normalize diagnostic separators");
+Check(DiagnosticPaths.CompiledMaterial("materials/Logo.VMAT_C") == "materials/Logo.VMAT_C", "preserve case and compiled suffix");
+foreach (var path in new string?[] { null, "", " ", "C:/materials/x.vmat", "/materials/x.vmat", "materials/../x.vmat", "materials/./x.vmat", "materials/x.png", "other/x.vmat", "materials/x\n.vmat" })
+    Check(DiagnosticPaths.CompiledMaterial(path) == null, "reject unsafe/unrecognized diagnostic path");
+Check(DiagnosticLog.Clean("a\r\nb\tc") == @"a\r\nb\tc", "escape multiline diagnostic values");
+Check(DiagnosticLog.Clean("bad\u0001value") == "bad?value", "escape diagnostic controls");
+Check(DiagnosticLog.Clean(null) == "<null>", "null diagnostic value");
+Check(DiagnosticLog.Clean(new string('x', 5000)).Length < 4200, "bound diagnostic line");
+var logRoot = Path.Combine(Path.GetTempPath(), "mapdecals-debug-tests-" + Guid.NewGuid());
+Directory.CreateDirectory(logRoot);
+try
+{
+    var lines = new List<string>(); var warnings = new List<string>();
+    string logPath = Path.Combine(logRoot, "logs", "debug.log");
+    var sink = new DiagnosticLog(logPath, lines.Add, warnings.Add, 1);
+    sink.Write("TEST", "console-only", false);
+    Check(lines.Count == 1 && !File.Exists(logPath), "console-only mode");
+    sink.Write("TEST", "first\nentry", true);
+    Check(File.ReadAllLines(logPath).Length == 1, "single physical log line");
+    Check(File.ReadAllText(logPath).Contains(@"first\nentry"), "file escape retained");
+    sink.Write("TEST", "second", true);
+    sink.Write("TEST", "third", true);
+    sink.Write("TEST", "fourth", true);
+    Check(File.Exists(logPath + ".1") && File.Exists(logPath + ".2"), "two rotated archives");
+    Check(File.ReadAllText(logPath + ".2").Contains("second"), "oldest archive bounded");
+    Check(File.ReadAllText(logPath).Contains("#5 TEST fourth"), "monotonic sequence across rotations");
+    Check(warnings.Count == 0, "normal sink no warnings");
+    string blocker = Path.Combine(logRoot, "not-a-directory"); File.WriteAllText(blocker, "block");
+    var failing = new DiagnosticLog(Path.Combine(blocker, "debug.log"), lines.Add, warnings.Add);
+    failing.Write("TEST", "still-console-1", true); failing.Write("TEST", "still-console-2", true);
+    Check(warnings.Count == 1, "file failure warns once");
+    Check(lines.Last().Contains("still-console-2"), "file failure preserves console output");
+    new DiagnosticLog(logPath, _ => throw new Exception(), _ => throw new Exception()).Write("TEST", "safe callback", false);
+    Check(true, "diagnostic callbacks cannot break plugin");
+}
+finally { Directory.Delete(logRoot, true); }
+Console.WriteLine($"PASS: {assertions} assertions (validation, pagination, visibility, SQLite migration/CRUD, diagnostic paths/logging/rotation).");
 Console.WriteLine("Not covered: CS2 rendering, clicks, resource compilation, network transmission, MySQL/PostgreSQL.");

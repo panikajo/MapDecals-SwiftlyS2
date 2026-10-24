@@ -23,7 +23,9 @@
 
 ---
 
-## Panorama fork update (1.1.2)
+## Panorama fork update (1.1.3)
+
+**1.1.3:** opt-in detailed diagnostics, server GAME material lookup, spawn/transform/database/transmit traces and read-only `!mapdecaldebug [id|paths]` snapshots. **[Диагностика невидимых декалей](docs/DEBUG.ru.md)**.
 
 **1.1.2:** the plugin now defaults to `panorama/layout/custom_game/swiftly_menu_ui.xml` to reuse the existing admin UI resources. Change `PanoramaLayout` in existing configs too; defaults do not overwrite saved values. The included separately named `mapdecals_menu_ui` source assets are optional and still require that explicit path in config.
 
@@ -37,7 +39,7 @@ This fork targets **SwiftlyS2 1.5.0-beta.26** (the server version reported durin
 - Re-enabled per-player transmit logic; repaired asynchronous load/preference races and entity cleanup. **In-game transmission/rendering still requires server testing.**
 - Fixed .NET 10 package versions, lock files, portable packaging, SQLite/logic tests and CI.
 
-Panorama XML/CSS must be compiled with CS2 Workshop Tools and delivered to clients in Workshop content. Shipping the DLL alone does not install the UI. The included files are source assets, not a compiled VPK.
+Panorama XML/CSS must be compiled with CS2 Workshop Tools and available in mounted client content (typically Workshop; manual installation is possible for local tests). Shipping the DLL alone does not install the UI. The included files are source assets, not a compiled VPK.
 
 ```bash
 dotnet restore src/CS2-MapDecals.csproj --locked-mode

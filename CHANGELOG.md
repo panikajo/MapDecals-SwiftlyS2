@@ -1,3 +1,12 @@
+## [1.1.3]
+
+- Add opt-in bounded diagnostic logs: GAME/VPK material lookup, placement geometry, spawn/next-update entity state, database lifecycle, edits, preferences and per-player transmit decisions.
+- Add admin-only read-only `mapdecaldebug [decal-id|paths]` snapshots with a two-second rate limit; server console supported.
+- Rotate debug files at approximately 5 MiB with two archives; preserve console output on file errors; escape/truncate diagnostic fields.
+- Keep existing Panorama layout, projection algorithm, permissions and database schema unchanged.
+- Add Russian diagnostic instructions and pure logging/path/rotation tests (88 total logic/SQLite/diagnostic assertions).
+- Verified Release compilation and Panorama static contract on beta.26 dependencies; live CS2/client rendering remains unverified.
+
 ## [1.1.2]
 
 - Change the default PanoramaLayout to panorama/layout/custom_game/swiftly_menu_ui.xml as requested.

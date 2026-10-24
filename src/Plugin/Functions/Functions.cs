@@ -26,6 +26,7 @@ public sealed partial class Plugin
         try
         {
             var eyeAngles = pawn.EyeAngles;
+            DebugEvent("PLACEMENT_GEOMETRY", $"uniqId={decal.UniqId} rawPing=[{DecalRules.Triple(position.X, position.Y, position.Z)}] eyeAngles=[{DecalRules.Triple(eyeAngles.X, eyeAngles.Y, eyeAngles.Z)}] orientationSource=player-eyes surfaceNormal=NOT_TRACED xyOffset=2");
 
             // Flip yaw to face the player
             float flippedYaw = (eyeAngles.Y + 180.0f) % 360.0f;
@@ -51,6 +52,7 @@ public sealed partial class Plugin
             if (eyeZ < -0.90f)
             {
                 decalPos.Z += 1f;
+                DebugEvent("PLACEMENT_TRANSFORM", $"branch=floor eyeZ={DecalRules.Number(eyeZ)} position=[{DecalRules.Triple(decalPos.X, decalPos.Y, decalPos.Z)}] angles=[{DecalRules.Triple(angle.X, angle.Y, angle.Z)}]");
                 entityHandle = CreateDecal(
                     decalPos,
                     angle,
@@ -67,6 +69,7 @@ public sealed partial class Plugin
 
             // Default wall decal
             angle.X = 90.0f;
+            DebugEvent("PLACEMENT_TRANSFORM", $"branch=wall eyeZ={DecalRules.Number(eyeZ)} position=[{DecalRules.Triple(decalPos.X, decalPos.Y, decalPos.Z)}] angles=[{DecalRules.Triple(angle.X, angle.Y, angle.Z)}]");
             entityHandle = CreateDecal(
                 decalPos,
                 angle,
@@ -81,6 +84,7 @@ public sealed partial class Plugin
         }
         catch (Exception ex)
         {
+            DebugEvent("PLACEMENT_ERROR", $"error={ex.GetType().Name}: {ex.Message}");
             Core.Logger.LogError($"Error while creating decal: {ex}");
         }
     }
@@ -112,6 +116,7 @@ public sealed partial class Plugin
             Entity = entityHandle
         };
 
+        DebugEvent("PLACEMENT_SAVE", $"slot={player.PlayerID} uniqId={decal.UniqId} entity={entityHandle.Value?.Index} map={mapdecal.Map} position=[{mapdecal.Position}] angles=[{mapdecal.Angles}]");
         var generation = MapGeneration;
         var steamId = player.SteamID;
         _ = Task.Run(async () =>
@@ -124,7 +129,9 @@ public sealed partial class Plugin
             }
             Core.Scheduler.NextWorldUpdate(() =>
             {
-                if (!Running || generation != MapGeneration) return;
+                if (!Running || generation != MapGeneration)
+                { DebugEvent("PLACEMENT_SAVE_STALE", $"requestGeneration={generation} id={id}"); return; }
+                DebugEvent("PLACEMENT_SAVE_RESULT", $"id={id} success={id != null} uniqId={mapdecal.DecalId}");
                 if (id == null)
                 {
                     mapdecal.DeleteEntity();
@@ -141,10 +148,13 @@ public sealed partial class Plugin
     public static CHandle<CEnvDecal>? CreateDecal(string position, string ang, string uniqueid, int depth, float width, float height, bool forceOnVip, MapDecal mapdecal)
     {
         var decal = Config.CurrentValue.Props.FirstOrDefault(d => d.UniqId == uniqueid);
-        if (!Vector.TryDeserialize(position, out var cords) || !QAngle.TryDeserialize(ang, out var angle)) return null;
+        DebugEvent("RECORD_SPAWN", $"id={mapdecal.Id} uniqId={uniqueid} active={mapdecal.IsActive} position=[{position}] angles=[{ang}]");
+        if (!Vector.TryDeserialize(position, out var cords) || !QAngle.TryDeserialize(ang, out var angle))
+        { DebugEvent("SPAWN_REJECT", $"id={mapdecal.Id} reason=invalid-position-or-angles"); return null; }
 
         if (decal == null)
         {
+            DebugEvent("SPAWN_REJECT", $"id={mapdecal.Id} reason=missing-config uniqId={uniqueid}");
             if (!_warnErrorDecal)
             {
                 Core.Logger.LogError($"Failed to spawn {mapdecal.DecalName} because unable to find any decal with uniqueid `{uniqueid}` in config.json.");
@@ -166,10 +176,12 @@ public sealed partial class Plugin
 
     public static CHandle<CEnvDecal>? CreateDecal(Vector cords, QAngle angle, ConfigDecals decal, int depth, float width, float height, bool forceOnVip)
     {
+        DebugEvent("SPAWN_BEGIN", $"uniqId={decal.UniqId} material={decal.Material} position=[{DecalRules.Triple(cords.X, cords.Y, cords.Z)}] angles=[{DecalRules.Triple(angle.X, angle.Y, angle.Z)}] width={DecalRules.Number(width)} height={DecalRules.Number(height)} depth={depth} forced={forceOnVip}");
+        DebugProbeMaterial(decal.Material);
         using (var keyValues = new CEntityKeyValues())
         {
             var entity = Core.EntitySystem.CreateEntityByDesignerName<CEnvDecal>("env_decal");
-            if (entity == null) return null;
+            if (entity == null) { DebugEvent("SPAWN_REJECT", "reason=CreateEntityByDesignerName-returned-null classname=env_decal"); return null; }
 
             try
             {
@@ -193,6 +205,7 @@ public sealed partial class Plugin
                 entity.DispatchSpawn(keyValues);
 
                 entity.SetTransmitState(true);
+                DebugEntity("SPAWN_RESULT", entity);
 
                 foreach (var player in Core.PlayerManager.GetAllPlayers())
                 {
@@ -200,11 +213,22 @@ public sealed partial class Plugin
                     UpdateDecalTransmit(player, entity, decal, forceOnVip);
                 }
 
-                return Core.EntitySystem.GetRefEHandle(entity);
+                var handle = Core.EntitySystem.GetRefEHandle(entity);
+                if (DebugEnabled)
+                {
+                    var generation = MapGeneration;
+                    Core.Scheduler.NextWorldUpdate(() =>
+                    {
+                        if (!Running || generation != MapGeneration) return;
+                        DebugEntity("SPAWN_NEXT_UPDATE", handle.IsValid ? handle.Value : null);
+                    });
+                }
+                return handle;
             }
             catch (Exception error)
             {
                 if (entity.IsValid) entity.Despawn();
+                DebugEvent("SPAWN_ERROR", $"uniqId={decal.UniqId} error={error.GetType().Name}: {error.Message}");
                 Core.Logger.LogError($"Error while creating decal: {error}");
                 return null;
             }
@@ -230,6 +254,7 @@ public sealed partial class Plugin
                 || Core.Permission.PlayerHasPermission(player.SteamID, cdecal.ShowPermission);
             var preference = !_adDecalStatus.TryGetValue(player.PlayerID, out var status) || status;
             entity.SetTransmitState(DecalRules.IsVisible(permitted, forceOnVip.Value, preference), player.PlayerID);
+            DebugPlayerView(player, entity, cdecal, forceOnVip.Value);
             return;
         }
         foreach (var decal in _mapDecals)
@@ -243,6 +268,7 @@ public sealed partial class Plugin
 
     private static void LoadMapDecals(string map)
     {
+        DebugEvent("MAP_RECORDS_LOAD", $"requestedMap={map}");
         _mapDecals.Clear();
         var generation = MapGeneration;
         _ = LoadMapDecalsAsync(map, generation);
@@ -253,7 +279,9 @@ public sealed partial class Plugin
         var decals = await Task.Run(() => Database.GetDecals(map));
         Core.Scheduler.NextWorldUpdate(() =>
         {
-            if (!Running || generation != MapGeneration) return;
+            if (!Running || generation != MapGeneration)
+            { DebugEvent("MAP_RECORDS_STALE", $"requestedMap={map} requestGeneration={generation}"); return; }
+            DebugEvent("MAP_RECORDS_READY", $"requestedMap={map} records={decals.Count} active={decals.Count(d => d.IsActive)}");
             _mapDecals = decals;
             foreach (var decal in _mapDecals)
             {
@@ -267,6 +295,7 @@ public sealed partial class Plugin
 
     private void LoadPlayerPrefs(IPlayer player)
     {
+        DebugEvent("PREFERENCE_INIT", $"slot={player.PlayerID} default=true cookiesAvailable={PlayerCookiesAPIv1 != null}");
         _adDecalStatus[player.PlayerID] = true;
         UpdateDecalTransmit(player);
         if (PlayerCookiesAPIv1 != null) _ = LoadPlayerPrefsAsync(player, player.SteamID);
@@ -282,6 +311,7 @@ public sealed partial class Plugin
             {
                 if (!Running || !player.IsValid || player.SteamID != steamId) return;
                 _adDecalStatus[player.PlayerID] = !api.Has(player, MapDecalCookieKey) || api.Get<bool>(player, MapDecalCookieKey);
+                DebugEvent("PREFERENCE_LOADED", $"slot={player.PlayerID} enabled={_adDecalStatus[player.PlayerID]}");
                 UpdateDecalTransmit(player);
             });
         }

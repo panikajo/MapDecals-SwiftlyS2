@@ -39,6 +39,7 @@ public sealed partial class MenuManager
                 );
                 button.Click += (sender, args) =>
                 {
+                    Plugin.DebugEvent("PLACEMENT_SELECT", $"mode=wasd slot={player.PlayerID} uniqId={prop.UniqId} material={prop.Material}");
                     var steamid = player.SteamID;
                     if (!Plugin._applyingDecal.TryAdd(steamid, prop))
                     {

@@ -74,6 +74,7 @@ internal sealed class PanoramaDecalMenu : IDisposable
         { Message(p, "cc.command.mustbealive"); return; }
         Close(p.PlayerID); // Release cursor: the player must be able to aim and ping.
         Plugin._applyingDecal[p.SteamID] = material;
+        Plugin.DebugEvent("PLACEMENT_SELECT", $"mode=panorama slot={p.PlayerID} uniqId={material.UniqId} material={material.Material}");
         Message(p, "cc.placedcal.pinghelper");
         Message(p, "cc.panorama.cancelplacement");
     }
@@ -272,6 +273,7 @@ internal sealed class PanoramaDecalMenu : IDisposable
         s.Busy = true;
         var next = Copy(d);
         change(next);
+        Plugin.DebugEvent("EDIT_REQUEST", $"slot={p.PlayerID} id={d.Id} active={next.IsActive} forced={next.ForceOnVIP} position=[{next.Position}] angles=[{next.Angles}] width={DecalRules.Number(next.Width)} height={DecalRules.Number(next.Height)} depth={next.Depth}");
         var generation = Plugin.MapGeneration;
         _ = Task.Run(() => SaveAsync(p, s, d, next, generation));
     }
@@ -282,6 +284,7 @@ internal sealed class PanoramaDecalMenu : IDisposable
         Plugin.Core.Scheduler.NextWorldUpdate(() =>
         {
             if (_disposed || !Plugin.Running || generation != Plugin.MapGeneration) return;
+            Plugin.DebugEvent("EDIT_RESULT", $"id={d.Id} saved={id != null}");
             _editing.Remove(d.Id);
             s.Busy = false;
             if (id != null && Plugin._mapDecals.Contains(d))

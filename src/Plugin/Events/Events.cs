@@ -26,6 +26,8 @@ public sealed partial class Plugin
     private void OnMapLoad(IOnMapLoadEvent @event)
     {
         MapGeneration++;
+        _debugMap = @event.MapName;
+        DebugEvent("MAP_LOAD", $"newMap={@event.MapName}");
         Panorama.Reset();
         _applyingDecal.Clear();
         LoadMapDecals(@event.MapName);
@@ -34,20 +36,26 @@ public sealed partial class Plugin
 
     private void OnPrecacheResource(IOnPrecacheResourceEvent @event)
     {
+        DebugEvent("PRECACHE_BEGIN", $"props={Config.CurrentValue.Props.Count} panorama={Config.CurrentValue.UsePanoramaMenu}; AddItem records a request, not completion");
         if (Config.CurrentValue.UsePanoramaMenu)
+        {
             @event.AddItem(Config.CurrentValue.PanoramaLayout);
+            DebugEvent("PRECACHE_REQUEST", $"kind=layout path={Config.CurrentValue.PanoramaLayout}");
+        }
         var props = Config.CurrentValue.Props;
         if (props.Count() > 0)
         {
             foreach (var prop in props)
             {
                 @event.AddItem(prop.Material);
+                DebugEvent("PRECACHE_REQUEST", $"kind=material uniqId={prop.UniqId} path={prop.Material}");
             }
         }
     }
 
     private HookResult OnRoundStart(EventRoundPoststart @event)
     {
+        DebugEvent("ROUND_RESPAWN", $"records={_mapDecals.Count} active={_mapDecals.Count(d => d.IsActive)}");
         foreach (var decal in _mapDecals)
         {
             // CS2 may preserve entities across a round; never create a duplicate.
@@ -67,6 +75,7 @@ public sealed partial class Plugin
                 decal
             );
 
+            DebugEvent("ROUND_RECORD", $"id={decal.Id} uniqId={decal.DecalId} created={entityHandle.HasValue}");
             if (entityHandle == null) continue;
 
             decal.Entity = (CHandle<CEnvDecal>)entityHandle;
@@ -84,8 +93,10 @@ public sealed partial class Plugin
         if (!_applyingDecal.TryGetValue(steamid, out var decal) || decal == null) return HookResult.Continue;
 
         var pawn = player.PlayerPawn;
-        if (pawn == null || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE
-            || !PanoramaDecalMenu.CanManage(player)) return HookResult.Continue;
+        bool allowed = PanoramaDecalMenu.CanManage(player);
+        DebugEvent("PLACEMENT_PING", $"slot={player.PlayerID} uniqId={decal.UniqId} material={decal.Material} ping=[{DecalRules.Triple(@event.X, @event.Y, @event.Z)}] pawnPresent={pawn != null} lifeState={pawn?.LifeState} adminAllowed={allowed}");
+        if (pawn == null || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE || !allowed)
+        { DebugEvent("PLACEMENT_REJECT", "missing pawn, not alive, or missing admin permission; pending selection retained"); return HookResult.Continue; }
 
         _applyingDecal.TryRemove(steamid, out _);
         Panorama.Close(player.PlayerID);
@@ -112,6 +123,7 @@ public sealed partial class Plugin
     {
         var player = @event.Accessor.GetPlayer("userid");
         if (player == null || player.IsFakeClient) return HookResult.Continue;
+        _lastDebugCommand.Remove(player.PlayerID);
         Panorama.Close(player.PlayerID);
         _applyingDecal.TryRemove(player.SteamID, out _);
         if (_adDecalStatus.TryRemove(player.PlayerID, out var status) && PlayerCookiesAPIv1 != null)

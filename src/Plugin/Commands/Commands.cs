@@ -9,6 +9,7 @@ public sealed partial class Plugin
     /* ==================== Command Registration ==================== */
     private void RegisterCommands()
     {
+        Core.Command.RegisterCommand("mapdecaldebug", OnDebugCommand);
         RegisterCommandWithAliases(Config.CurrentValue.PlaceDecalCommands, OnMapDecalsCommand);
         RegisterCommandWithAliases(Config.CurrentValue.AdToggleCommands, OnDecalToggleCommand);
         // Own-session escape hatch even when the client's Workshop layout did not load.
@@ -50,6 +51,7 @@ public sealed partial class Plugin
             ctx.Reply($"{localizer["cc.decals.prefix"]} {localizer["cc.command.mustbealive"]}");
             return;
         }
+        DebugEvent("MENU_REQUEST", $"playerSlot={player.PlayerID} pawnLifeState={player.PlayerPawn.LifeState} panorama={Config.CurrentValue.UsePanoramaMenu}");
         _applyingDecal.TryRemove(player.SteamID, out _);
         MenuManager.OpenMainMenu(player, localizer);
     }
@@ -71,6 +73,7 @@ public sealed partial class Plugin
         }
 
         _adDecalStatus[player.PlayerID] = !status;
+        DebugEvent("PREFERENCE_TOGGLE", $"playerSlot={player.PlayerID} old={status} new={!status}");
 
         var localizer = Core.Translation.GetPlayerLocalizer(player);
 

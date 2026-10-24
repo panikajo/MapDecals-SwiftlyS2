@@ -11,7 +11,7 @@ namespace MapDecals;
 
 [PluginMetadata(
     Id = "cc.mapdecals",
-    Version = "1.1.2",
+    Version = "1.1.3",
     Name = "Map Decals",
     Author = "Cruze",
     Description = "Place map decals inside map",
@@ -44,6 +44,7 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
         MapGeneration++;
 
         InitializeConfigs();
+        InitializeDiagnostics(hotReload);
         Database = new DatabaseService("cc_mapdecals", hotReload);
 
         MenuManager = new MenuManager(Database, Config.CurrentValue);
@@ -82,6 +83,7 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
     /* ==================== Shared API ==================== */
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
+        DebugEvent("COOKIES_API", $"available={interfaceManager.HasSharedInterface("Cookies.Player.v1")}");
         if (interfaceManager.HasSharedInterface("Cookies.Player.v1"))
         {
             PlayerCookiesAPIv1 = interfaceManager.GetSharedInterface<IPlayerCookiesAPIv1>("Cookies.Player.v1");
@@ -98,6 +100,7 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
     /* ==================== Unload ==================== */
     public override void Unload()
     {
+        DebugEvent("UNLOAD", $"records={_mapDecals.Count} pendingPlacements={_applyingDecal.Count}");
         Running = false;
         MapGeneration++;
         Core.Event.OnPrecacheResource -= OnPrecacheResource;
