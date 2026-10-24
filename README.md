@@ -23,7 +23,9 @@
 
 ---
 
-## Panorama fork update (1.1.1)
+## Panorama fork update (1.1.2)
+
+**1.1.2:** the plugin now defaults to `panorama/layout/custom_game/swiftly_menu_ui.xml` to reuse the existing admin UI resources. Change `PanoramaLayout` in existing configs too; defaults do not overwrite saved values. The included separately named `mapdecals_menu_ui` source assets are optional and still require that explicit path in config.
 
 This fork targets **SwiftlyS2 1.5.0-beta.26** (the server version reported during testing) and adds a server-driven Panorama editor based on the supplied admin-menu layout. The original menu remains the default until client resources are installed. Version 1.1.1 fixes the earlier 1.1.0 build requiring stable 1.5.0, which caused the beta.26 loader to reject it.
 

@@ -1,3 +1,10 @@
+## [1.1.2]
+
+- Change the default PanoramaLayout to panorama/layout/custom_game/swiftly_menu_ui.xml as requested.
+- Preserve SwiftlyS2 1.5.0-beta.26 compatibility and all utils-* panel IDs.
+- Existing config values are preserved: update PanoramaLayout manually if it still points to mapdecals_menu_ui.xml.
+- The separately named mapdecals_menu_ui assets/build kit remain optional; they require an explicit config override.
+
 ## [1.1.1]
 
 - Build against SwiftlyS2.CS2 1.5.0-beta.26 to match the reported server installation.

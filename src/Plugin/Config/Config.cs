@@ -20,7 +20,7 @@ public sealed class PluginConfig
 {
     // Enable only after the compiled Panorama resources are installed on clients.
     public bool UsePanoramaMenu { get; set; } = false;
-    public string PanoramaLayout { get; set; } = "panorama/layout/custom_game/mapdecals_menu_ui.xml";
+    public string PanoramaLayout { get; set; } = "panorama/layout/custom_game/swiftly_menu_ui.xml";
 
     public List<ConfigDecals> Props { get; set; } = new()
     {
