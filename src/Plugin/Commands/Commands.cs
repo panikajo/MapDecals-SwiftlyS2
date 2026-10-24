@@ -11,6 +11,13 @@ public sealed partial class Plugin
     {
         RegisterCommandWithAliases(Config.CurrentValue.PlaceDecalCommands, OnMapDecalsCommand);
         RegisterCommandWithAliases(Config.CurrentValue.AdToggleCommands, OnDecalToggleCommand);
+        // Own-session escape hatch even when the client's Workshop layout did not load.
+        Core.Command.RegisterCommand("mapdecalclose", ctx =>
+        {
+            if (ctx.Sender is not { IsValid: true } player) return;
+            Panorama.Close(player.PlayerID);
+            _applyingDecal.TryRemove(player.SteamID, out _);
+        });
     }
 
     private static void RegisterCommandWithAliases(CommandConfig config, ICommandService.CommandListener handler)
@@ -43,6 +50,7 @@ public sealed partial class Plugin
             ctx.Reply($"{localizer["cc.decals.prefix"]} {localizer["cc.command.mustbealive"]}");
             return;
         }
+        _applyingDecal.TryRemove(player.SteamID, out _);
         MenuManager.OpenMainMenu(player, localizer);
     }
 

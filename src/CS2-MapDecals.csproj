@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>$(MSBuildThisFileName)</RootNamespace>
@@ -12,23 +13,23 @@
     <AssemblyName>$(MSBuildThisFileName)</AssemblyName>
     <OutputPath>$(MSBuildThisFileDirectory)build/</OutputPath>
     <!-- <PublishDir>$(OutputPath)publish/$(MSBuildThisFileName)</PublishDir> -->
-    <PublishDir>D:\Test Servers\Test Server CS2\game\csgo\addons\swiftlys2\plugins\CS2-MapDecals</PublishDir>
+    <PublishDir>$(MSBuildThisFileDirectory)../artifacts/CS2-MapDecals/</PublishDir>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="*" />
-		<PackageReference Include="Dommel" Version="*" />
-		<PackageReference Include="FluentMigrator" Version="*" />
-		<PackageReference Include="FluentMigrator.Runner.MySql" Version="*" />
-		<PackageReference Include="FluentMigrator.Runner.Postgres" Version="*" />
-		<PackageReference Include="FluentMigrator.Runner.SQLite" Version="*" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*" ExcludeAssets="runtime" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="*" ExcludeAssets="runtime" PrivateAssets="all" />
-		<PackageReference Include="MySqlConnector" Version="*" />
-		<PackageReference Include="Npgsql" Version="*" />
-    	<PackageReference Include="SwiftlyS2.CS2" Version="1.1.5-beta.57" ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Dapper" Version="2.1.89" />
+		<PackageReference Include="Dommel" Version="3.5.3" />
+		<PackageReference Include="FluentMigrator" Version="8.0.1" />
+		<PackageReference Include="FluentMigrator.Runner.MySql" Version="8.0.1" />
+		<PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
+		<PackageReference Include="FluentMigrator.Runner.SQLite" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.13" ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="MySqlConnector" Version="2.6.2" />
+		<PackageReference Include="Npgsql" Version="10.0.3" />
+		<PackageReference Include="SwiftlyS2.CS2" Version="1.5.0" ExcludeAssets="runtime" PrivateAssets="all" />
 		<None Update="resources\**\*.*" CopyToOutputDirectory="PreserveNewest" />
 
 		<Reference Include="Cookies.Contract">
@@ -37,6 +38,6 @@
 	</ItemGroup>
 
 	<Target Name="CreateZip" AfterTargets="Publish">
-		<ZipDirectory SourceDirectory="$(PublishDir)../" DestinationFile="$(OutputPath)../$(AssemblyName).zip" Overwrite="true" />
+		<ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(MSBuildThisFileDirectory)../artifacts/$(AssemblyName).zip" Overwrite="true" />
 	</Target>
 </Project>

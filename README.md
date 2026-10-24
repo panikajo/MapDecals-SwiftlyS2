@@ -23,6 +23,30 @@
 
 ---
 
+## Panorama fork update (1.1.0)
+
+This fork targets **SwiftlyS2 1.5.0 stable** and adds a server-driven Panorama editor based on the supplied admin-menu layout. The original menu remains the default until client resources are installed.
+
+**[Установка Panorama, совместимость, ограничения и чек-лист проверки](docs/PANORAMA.ru.md)**
+
+- Separate UI asset names; no overwrite of the admin menu.
+- Six-row pagination, material selection, ping placement, coordinate/size editing, visibility toggles and confirmed deletion.
+- English/Russian translations, validated chat input, permission/ownership checks and serialized Panorama edits.
+- Re-enabled per-player transmit logic; repaired asynchronous load/preference races and entity cleanup. **In-game transmission/rendering still requires server testing.**
+- Fixed .NET 10 package versions, lock files, portable packaging, SQLite/logic tests and CI.
+
+Panorama XML/CSS must be compiled with CS2 Workshop Tools and delivered to clients in Workshop content. Shipping the DLL alone does not install the UI. The included files are source assets, not a compiled VPK.
+
+```bash
+dotnet restore src/CS2-MapDecals.csproj --locked-mode
+dotnet run --project tests/MapDecals.Tests -c Release
+dotnet publish src/CS2-MapDecals.csproj -c Release --no-restore
+```
+
+Output: `artifacts/CS2-MapDecals.zip`. Existing database schema and plugin ID are preserved. Back up configuration/database before upgrading. The upstream documentation below is retained for attribution; its old minimum framework version and known-issue note refer to the upstream version, not this fork update.
+
+---
+
 ## ❤️ Support the Project
 
 <div align="center">

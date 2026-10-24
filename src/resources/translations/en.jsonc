@@ -1,12 +1,9 @@
 {
   "cc.decals.prefix": "[green][[lime]CC-MapDecals[green]][default]",
-  // Command replies
   "cc.command.mustbeingame": "You must be in-game to use this command.",
-  "cc.command.mustbeinalive": "You must be alive to use this command.",
   "cc.command.tryagainlater": "Please try again later",
   "cc.decaltoggle.on": "You have enabled decal ads.",
   "cc.decaltoggle.off": "You have disabled decal ads.",
-  // Menus
   "cc.menu.mainmenu.title": "CC-MapDecals Menu",
   "cc.menu.placedecal.option": "Place New Decal",
   "cc.menu.editdecal.option": "Edit Existing Decal",
@@ -35,5 +32,18 @@
   "cc.menu.editdecal.forceonvip.on": "Turned forceonvip on.",
   "cc.menu.editdecal.forceonvip.off": "Turned forceonvip off.",
   "cc.menu.cancelplacedecal.cancel": "Cancel decal placing",
-  "cc.placedcal.pinghelper": "Place a player ping in the position you want the decal to be."
+  "cc.placedcal.pinghelper": "Place a player ping in the position you want the decal to be.",
+  "cc.command.mustbealive": "You must be alive to use this command.",
+  "cc.panorama.size": "Size and projection depth",
+  "cc.panorama.confirm": "Confirm deletion",
+  "cc.panorama.cancel": "Cancel",
+  "cc.panorama.number": "Enter a number in chat (width/height 1–4096; depth 1–256). Use a decimal point.",
+  "cc.panorama.description": "Map Decals · administration",
+  "cc.panorama.hint": "Click an option · X closes the menu",
+  "cc.panorama.inputhint": "Type the value in chat within 60 seconds. !cancel returns to the menu.",
+  "cc.panorama.invalid": "Invalid value, duplicate name, or out of range. Try again; !cancel to go back.",
+  "cc.panorama.savefailed": "Database write failed. Changes were not applied.",
+  "cc.panorama.unavailable": "Could not create the HUD. Check Workshop assets and logs; set UsePanoramaMenu=false for the legacy menu.",
+  "cc.panorama.cancelplacement": "Use !cancel to cancel placement, or !mapdecal to reopen the menu.",
+  "cc.panorama.cancelled": "Decal placement cancelled."
 }

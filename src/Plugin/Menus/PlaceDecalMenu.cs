@@ -1,3 +1,5 @@
+// Intentional compatibility fallback for servers without Workshop UI resources.
+#pragma warning disable CS0618
 using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Players;

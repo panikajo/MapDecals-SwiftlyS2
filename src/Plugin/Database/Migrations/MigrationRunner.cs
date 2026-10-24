@@ -19,7 +19,7 @@ public static class MigrationRunner
         using var dbConnection = dbService.GetConnection(connectionName);
         var protocol = dbService.GetConnectionInfo(connectionName).Driver;
 
-        var serviceProvider = new ServiceCollection()
+        using var serviceProvider = new ServiceCollection()
             .AddFluentMigratorCore()
             .ConfigureRunner(rb =>
             {

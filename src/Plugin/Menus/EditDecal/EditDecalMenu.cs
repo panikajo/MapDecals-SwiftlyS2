@@ -1,3 +1,5 @@
+// Intentional compatibility fallback for servers without Workshop UI resources.
+#pragma warning disable CS0618
 using SwiftlyS2.Core.Menus.OptionsBase;
 using SwiftlyS2.Shared.Menus;
 using SwiftlyS2.Shared.Natives;
@@ -60,11 +62,11 @@ public sealed partial class MenuManager
             {
                 if (e.NewValue.ToLower().Equals("yes"))
                 {
-                    await menuManager._database.DeleteDecal(decal.Id);
-                    Plugin._mapDecals.Remove(decal);
-                    decal.DeleteEntity();
+                    if (!await menuManager._database.DeleteDecal(decal.Id)) return;
                     Plugin.Core.Scheduler.NextWorldUpdate(() =>
                     {
+                        Plugin._mapDecals.Remove(decal);
+                        decal.DeleteEntity();
                         var menu = Plugin.Core.MenusAPI.GetCurrentMenu(player);
                         if (menu != null)
                             Plugin.Core.MenusAPI.CloseMenuForPlayer(player, menu);
@@ -79,7 +81,7 @@ public sealed partial class MenuManager
             var decalName = new InputMenuOption(localizer["cc.menu.editdecal.name"], defaultValue: decal.DecalName, hintMessage: localizer["cc.menu.editdecal.name.hint"],
             validator: (value) =>
             {
-                if (value.Length < 3 || string.IsNullOrWhiteSpace(value) || Plugin._mapDecals.Any(d => d.DecalName == value))
+                if (!DecalRules.ValidName(value) || Plugin._mapDecals.Any(d => d != decal && d.DecalName == value))
                 {
                     return false;
                 }
@@ -112,12 +114,12 @@ public sealed partial class MenuManager
                         return menuBuilder.Build();
                     }
 
-                    var positionX = position.X.ToString();
-                    var positionY = position.Y.ToString();
-                    var positionZ = position.Z.ToString();
-                    var angleX = angle.X.ToString();
-                    var angleY = angle.Y.ToString();
-                    var angleZ = angle.Z.ToString();
+                    var positionX = DecalRules.Number(position.X);
+                    var positionY = DecalRules.Number(position.Y);
+                    var positionZ = DecalRules.Number(position.Z);
+                    var angleX = DecalRules.Number(angle.X);
+                    var angleY = DecalRules.Number(angle.Y);
+                    var angleZ = DecalRules.Number(angle.Z);
 
                     var positionXInput = new InputMenuOption(
                         text: localizer["cc.menu.editdecal.position.x"],
@@ -125,7 +127,7 @@ public sealed partial class MenuManager
                         defaultValue: positionX,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || positionX == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || positionX == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }
@@ -148,7 +150,7 @@ public sealed partial class MenuManager
                         defaultValue: positionY,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || positionY == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || positionY == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }
@@ -171,14 +173,14 @@ public sealed partial class MenuManager
                         defaultValue: positionZ,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || positionZ == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || positionZ == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }
 
                             return true;
                         });
-                    positionZInput.SetValue(player, positionY);
+                    positionZInput.SetValue(player, positionZ);
                     positionZInput.ValueChanged += async (_, e) =>
                     {
                         decal.Position = $"{positionX} {positionY} {e.NewValue}";
@@ -194,7 +196,7 @@ public sealed partial class MenuManager
                         defaultValue: angleX,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || angleX == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || angleX == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }
@@ -217,7 +219,7 @@ public sealed partial class MenuManager
                         defaultValue: angleY,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || angleY == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || angleY == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }
@@ -240,7 +242,7 @@ public sealed partial class MenuManager
                         defaultValue: angleZ,
                         validator: (value) =>
                         {
-                            if (string.IsNullOrWhiteSpace(value) || angleZ == value || !float.TryParse(value, out _))
+                            if (string.IsNullOrWhiteSpace(value) || angleZ == value || !DecalRules.TryNumber(value, -32768, 32768, out _))
                             {
                                 return false;
                             }

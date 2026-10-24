@@ -15,38 +15,36 @@ public sealed partial class Plugin
         public bool IsEnabled { get; private set; }
 
         /* ==================== Constructor ==================== */
+        public Task Initialization { get; private set; } = Task.CompletedTask;
+
         public DatabaseService(string connectionName, bool hotReload)
         {
             _connectionName = connectionName;
-
-            Task.Run(async () =>
-            {
-                await InitializeAsync(hotReload);
-            });
         }
 
-        /* ==================== Initialization ==================== */
-        public async Task InitializeAsync(bool hotReload)
+        public void Start()
         {
-            try
+            // Capture engine state on the game thread, not inside Task.Run.
+            var map = Core.Engine.GlobalVars.MapName;
+            Initialization = Task.Run(() =>
             {
-                // Run FluentMigrator migrations
-                MigrationRunner.RunMigrations(Core.Database, _connectionName);
-
-                IsEnabled = true;
-
-                if (hotReload)
-                    LoadMapDecals(Core.Engine.GlobalVars.MapName);
-            }
-            catch (Exception ex)
-            {
-                Core.Logger.LogError(ex, "Failed to initialize database");
-                IsEnabled = false;
-            }
+                try
+                {
+                    MigrationRunner.RunMigrations(Core.Database, _connectionName);
+                    IsEnabled = true;
+                }
+                catch (Exception ex)
+                {
+                    Core.Logger.LogError(ex, "Failed to initialize database");
+                    IsEnabled = false;
+                }
+            });
+            if (!string.IsNullOrWhiteSpace(map)) LoadMapDecals(map);
         }
 
         public async Task<List<MapDecal>> GetDecals(string map)
         {
+            await Initialization;
             if (!IsEnabled)
                 return new();
 
@@ -68,6 +66,7 @@ public sealed partial class Plugin
 
         public async Task<ulong?> SaveDecal(MapDecal decal)
         {
+            await Initialization;
             if (!IsEnabled)
                 return null;
 
@@ -79,7 +78,7 @@ public sealed partial class Plugin
                 var existing = await connection.GetAsync<MapDecal>(decal.Id);
                 if (existing != null)
                 {
-                    await connection.UpdateAsync(decal);
+                    if (await connection.UpdateAsync(decal)) return decal.Id;
                 }
                 else
                 {
@@ -97,6 +96,7 @@ public sealed partial class Plugin
 
         public async Task<bool> DeleteDecal(ulong id)
         {
+            await Initialization;
             if (!IsEnabled)
                 return false;
 
@@ -105,15 +105,14 @@ public sealed partial class Plugin
                 using var connection = Core.Database.GetConnection(_connectionName);
                 connection.Open();
 
-                await connection.DeleteAsync(new MapDecal { Id = id });
+                return await connection.DeleteAsync(new MapDecal { Id = id });
             }
             catch (Exception ex)
             {
-                Core.Logger.LogError(ex, "Failed to delete decal for map {Map}", Core.Engine.GlobalVars.MapName);
+                Core.Logger.LogError(ex, "Failed to delete decal {Id}", id);
                 return false;
             }
 
-            return true;
         }
     }
 }

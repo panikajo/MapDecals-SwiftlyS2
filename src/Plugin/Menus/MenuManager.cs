@@ -15,7 +15,7 @@ public sealed partial class MenuManager
     // =========================================
 
     internal readonly Plugin.DatabaseService _database;
-    internal readonly PluginConfig _config;
+    internal PluginConfig _config => Plugin.Config.CurrentValue;
 
     // =========================================
     // =           CONSTRUCTOR
@@ -24,7 +24,7 @@ public sealed partial class MenuManager
     public MenuManager(Plugin.DatabaseService database, PluginConfig config)
     {
         _database = database;
-        _config = config;
+
     }
 
     // =========================================
@@ -34,12 +34,14 @@ public sealed partial class MenuManager
     /// <summary>Opens the main menu for decal placement</summary>
     public void OpenMainMenu(IPlayer player, ILocalizer localizer)
     {
-        DecalMenu.Show(this, player, localizer);
+        if (Plugin.Config.CurrentValue.UsePanoramaMenu) Plugin.Panorama.OpenMain(player);
+        else DecalMenu.Show(this, player, localizer);
     }
 
     /// <summary>Opens decal menu to edit decal placement</summary>
     public void OpenDecalMenu(IPlayer player, ILocalizer localizer, MapDecal decal)
     {
-        EditDecalMenu.Show(this, player, localizer, decal);
+        if (Plugin.Config.CurrentValue.UsePanoramaMenu) Plugin.Panorama.OpenEdit(player, decal);
+        else EditDecalMenu.Show(this, player, localizer, decal);
     }
 }

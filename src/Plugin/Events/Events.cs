@@ -1,3 +1,7 @@
+// Intentional compatibility fallback for servers without Workshop UI resources.
+#pragma warning disable CS0618
+using MapDecals.Menus;
+using Microsoft.Extensions.Logging;
 using SwiftlyS2.Shared.Events;
 using SwiftlyS2.Shared.GameEventDefinitions;
 using SwiftlyS2.Shared.Misc;
@@ -21,12 +25,17 @@ public sealed partial class Plugin
 
     private void OnMapLoad(IOnMapLoadEvent @event)
     {
+        MapGeneration++;
+        Panorama.Reset();
+        _applyingDecal.Clear();
         LoadMapDecals(@event.MapName);
         _warnErrorDecal = false;
     }
 
     private void OnPrecacheResource(IOnPrecacheResourceEvent @event)
     {
+        if (Config.CurrentValue.UsePanoramaMenu)
+            @event.AddItem(Config.CurrentValue.PanoramaLayout);
         var props = Config.CurrentValue.Props;
         if (props.Count() > 0)
         {
@@ -41,6 +50,10 @@ public sealed partial class Plugin
     {
         foreach (var decal in _mapDecals)
         {
+            // CS2 may preserve entities across a round; never create a duplicate.
+            var old = decal.GetEntity();
+            if (old != null) old.Despawn();
+            decal.Entity = default;
             if (!decal.IsActive) continue;
 
             var entityHandle = CreateDecal(
@@ -71,9 +84,11 @@ public sealed partial class Plugin
         if (!_applyingDecal.TryGetValue(steamid, out var decal) || decal == null) return HookResult.Continue;
 
         var pawn = player.PlayerPawn;
-        if (pawn == null) return HookResult.Continue;
+        if (pawn == null || pawn.LifeState != (byte)LifeState_t.LIFE_ALIVE
+            || !PanoramaDecalMenu.CanManage(player)) return HookResult.Continue;
 
-        _applyingDecal[steamid] = null;
+        _applyingDecal.TryRemove(steamid, out _);
+        Panorama.Close(player.PlayerID);
 
         var menu = Core.MenusAPI.GetCurrentMenu(player);
         if (menu != null)
@@ -96,18 +111,20 @@ public sealed partial class Plugin
     private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event)
     {
         var player = @event.Accessor.GetPlayer("userid");
-        if (player == null || !player.IsValid || player.IsFakeClient || PlayerCookiesAPIv1 == null) return HookResult.Continue;
-
-        if (_adDecalStatus.TryGetValue(player.PlayerID, out var status))
+        if (player == null || player.IsFakeClient) return HookResult.Continue;
+        Panorama.Close(player.PlayerID);
+        _applyingDecal.TryRemove(player.SteamID, out _);
+        if (_adDecalStatus.TryRemove(player.PlayerID, out var status) && PlayerCookiesAPIv1 != null)
         {
             PlayerCookiesAPIv1.Set(player, MapDecalCookieKey, status);
-            Task.Run(async () =>
-            {
-                await PlayerCookiesAPIv1.Save(player);
-                _adDecalStatus.Remove(player.PlayerID);
-            });
+            _ = SavePrefsAsync(player);
         }
-
         return HookResult.Continue;
+    }
+
+    private async Task SavePrefsAsync(SwiftlyS2.Shared.Players.IPlayer player)
+    {
+        try { if (PlayerCookiesAPIv1 != null) await PlayerCookiesAPIv1.Save(player); }
+        catch (Exception ex) { Core.Logger.LogWarning(ex, "Could not save decal preferences"); }
     }
 }
