@@ -1,3 +1,12 @@
+## [1.1.4]
+
+- Add Left / Center / Right selection to the Panorama main menu, applied immediately to all submenus for that player.
+- Add `PanoramaMenuPosition` config default (`center`), with case-insensitive validation and safe fallback.
+- Keep per-player overrides until disconnect/map change; clear them on reset to prevent slot reuse leaks.
+- Reuse existing `utils-dialog` / `pos-left`, `pos-center`, `pos-right` CSS classes; supplied swiftly_menu_ui needs no resource recompilation.
+- Preserve beta.26 compatibility, diagnostic logging, existing permissions, material projection and database schema.
+- Extend EN/RU translations, alignment logic tests and static CSS contract checks.
+
 ## [1.1.3]
 
 - Add opt-in bounded diagnostic logs: GAME/VPK material lookup, placement geometry, spawn/next-update entity state, database lifecycle, edits, preferences and per-player transmit decisions.

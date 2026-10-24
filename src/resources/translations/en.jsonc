@@ -45,5 +45,9 @@
   "cc.panorama.savefailed": "Database write failed. Changes were not applied.",
   "cc.panorama.unavailable": "Could not create the HUD. Check Workshop assets and logs; set UsePanoramaMenu=false for the legacy menu.",
   "cc.panorama.cancelplacement": "Use !cancel to cancel placement, or !mapdecal to reopen the menu.",
-  "cc.panorama.cancelled": "Decal placement cancelled."
+  "cc.panorama.cancelled": "Decal placement cancelled.",
+  "cc.panorama.position": "Menu position",
+  "cc.panorama.position.left": "Left",
+  "cc.panorama.position.center": "Center",
+  "cc.panorama.position.right": "Right"
 }

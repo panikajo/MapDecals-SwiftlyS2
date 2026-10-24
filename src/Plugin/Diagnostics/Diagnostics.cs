@@ -19,9 +19,9 @@ public sealed partial class Plugin
         _debugLog = new DiagnosticLog(System.IO.Path.Combine(Core.PluginDataDirectory, "logs", "mapdecals-debug.log"),
             line => Core.Logger.LogInformation("{DiagnosticLine}", line),
             line => Core.Logger.LogWarning("{DiagnosticWarning}", line));
-        Core.Logger.LogInformation("MapDecals 1.1.3 diagnostics: DebugLogging={Enabled}; file={File}. Run mapdecaldebug for a read-only snapshot.",
+        Core.Logger.LogInformation("MapDecals 1.1.4 diagnostics: DebugLogging={Enabled}; file={File}. Run mapdecaldebug for a read-only snapshot.",
             Config.CurrentValue.DebugLogging, _debugLog.Path);
-        DebugEvent("LOAD", $"version=1.1.3 api=1.5.0-beta.26 hotReload={hotReload} panorama={Config.CurrentValue.UsePanoramaMenu} layout={Config.CurrentValue.PanoramaLayout}");
+        DebugEvent("LOAD", $"version=1.1.4 api=1.5.0-beta.26 hotReload={hotReload} panorama={Config.CurrentValue.UsePanoramaMenu} defaultPosition={DecalRules.MenuPosition(Config.CurrentValue.PanoramaMenuPosition)} layout={Config.CurrentValue.PanoramaLayout}");
         DebugEvent("LIMIT", "server filesystem/transmit checks do NOT prove client mounting, texture/shader validity, successful precache completion or visible pixels");
         foreach (var prop in Config.CurrentValue.Props.Take(64))
             DebugEvent("CONFIG_PROP", $"uniqId={prop.UniqId} name={prop.Name} material={prop.Material} showPermission={prop.ShowPermission}");
@@ -113,8 +113,8 @@ public sealed partial class Plugin
         try
         {
             _debugMap = Core.Engine.GlobalVars.MapName;
-            DebugEvent("REPORT_BEGIN", $"version=1.1.3 id={(id.HasValue ? id.Value.ToString() : "all")} source={(ctx.IsSentByPlayer ? $"playerSlot={slot}" : "server-console")} automaticLogging={DebugEnabled} fileLogging={Config.CurrentValue.DebugLogToFile}", true);
-            DebugEvent("SERVER", $"gameFiles={Core.GameFilesDirectory} pluginData={Core.PluginDataDirectory} config={Core.Configuration.GetConfigPath("config.json")} dbEnabled={Database.IsEnabled} dbInitialization={Database.Initialization.Status} activeRecords={_mapDecals.Count} pendingPlacements={_applyingDecal.Count} panorama={Config.CurrentValue.UsePanoramaMenu} layout={Config.CurrentValue.PanoramaLayout}", true);
+            DebugEvent("REPORT_BEGIN", $"version=1.1.4 id={(id.HasValue ? id.Value.ToString() : "all")} source={(ctx.IsSentByPlayer ? $"playerSlot={slot}" : "server-console")} automaticLogging={DebugEnabled} fileLogging={Config.CurrentValue.DebugLogToFile}", true);
+            DebugEvent("SERVER", $"gameFiles={Core.GameFilesDirectory} pluginData={Core.PluginDataDirectory} config={Core.Configuration.GetConfigPath("config.json")} dbEnabled={Database.IsEnabled} dbInitialization={Database.Initialization.Status} activeRecords={_mapDecals.Count} pendingPlacements={_applyingDecal.Count} panorama={Config.CurrentValue.UsePanoramaMenu} defaultPosition={DecalRules.MenuPosition(Config.CurrentValue.PanoramaMenuPosition)} layout={Config.CurrentValue.PanoramaLayout}", true);
             DebugSearchPaths();
             if (ctx.Args.Length == 1 && ctx.Args[0] == "paths")
             { FinishDebugReport(ctx); return; }

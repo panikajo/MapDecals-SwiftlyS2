@@ -124,7 +124,7 @@ public sealed partial class Plugin
         var player = @event.Accessor.GetPlayer("userid");
         if (player == null || player.IsFakeClient) return HookResult.Continue;
         _lastDebugCommand.Remove(player.PlayerID);
-        Panorama.Close(player.PlayerID);
+        Panorama.OnPlayerDisconnected(player.PlayerID);
         _applyingDecal.TryRemove(player.SteamID, out _);
         if (_adDecalStatus.TryRemove(player.PlayerID, out var status) && PlayerCookiesAPIv1 != null)
         {

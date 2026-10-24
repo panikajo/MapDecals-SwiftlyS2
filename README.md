@@ -23,7 +23,9 @@
 
 ---
 
-## Panorama fork update (1.1.3)
+## Panorama fork update (1.1.4)
+
+**1.1.4:** select **Left / Center / Right** in the Panorama main menu. `MapDecals.PanoramaMenuPosition` sets the default (`left`, `center`, `right`; default `center`). Player overrides last until disconnect or map change. Existing `swiftly_menu_ui` CSS already includes these classes; no UI recompilation is required for that layout.
 
 **1.1.3:** opt-in detailed diagnostics, server GAME material lookup, spawn/transform/database/transmit traces and read-only `!mapdecaldebug [id|paths]` snapshots. **[Диагностика невидимых декалей](docs/DEBUG.ru.md)**.
 

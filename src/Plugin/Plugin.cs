@@ -11,7 +11,7 @@ namespace MapDecals;
 
 [PluginMetadata(
     Id = "cc.mapdecals",
-    Version = "1.1.3",
+    Version = "1.1.4",
     Name = "Map Decals",
     Author = "Cruze",
     Description = "Place map decals inside map",

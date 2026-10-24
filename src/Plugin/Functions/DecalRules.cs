@@ -6,6 +6,12 @@ namespace MapDecals;
 internal static class DecalRules
 {
     internal const int PageSize = 6;
+    internal static string MenuPosition(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "left" => "left",
+        "right" => "right",
+        _ => "center"
+    };
     internal static int PageCount(int count) => Math.Max(1, (count + PageSize - 1) / PageSize);
     internal static bool IsVisible(bool permitted, bool forced, bool preference) => permitted && (forced || preference);
     internal static bool TryNumber(string text, float min, float max, out float value) =>

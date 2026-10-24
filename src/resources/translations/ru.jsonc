@@ -45,5 +45,9 @@
   "cc.panorama.savefailed": "Ошибка записи в БД. Изменения не применены.",
   "cc.panorama.unavailable": "Не удалось создать HUD. Проверьте Workshop-ресурсы и логи; UsePanoramaMenu=false включает старое меню.",
   "cc.panorama.cancelplacement": "!cancel — отменить размещение, !mapdecal — открыть меню снова.",
-  "cc.panorama.cancelled": "Размещение декали отменено."
+  "cc.panorama.cancelled": "Размещение декали отменено.",
+  "cc.panorama.position": "Расположение меню",
+  "cc.panorama.position.left": "Слева",
+  "cc.panorama.position.center": "По центру",
+  "cc.panorama.position.right": "Справа"
 }

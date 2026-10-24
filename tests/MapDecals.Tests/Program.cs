@@ -62,6 +62,13 @@ try
     Check(connection.QuerySingle<long>("SELECT COUNT(*) FROM cc_mapdecals") == 0, "empty after delete");
 }
 finally { SqliteConnection.ClearAllPools(); if (File.Exists(db)) File.Delete(db); }
+// Menu alignment always yields exactly one supported CSS class.
+foreach (var (input, expected) in new (string?, string)[] {
+    ("left", "left"), ("center", "center"), ("right", "right"),
+    (" LEFT ", "left"), ("Right", "right"), (null, "center"),
+    ("", "center"), ("bottom", "center"), ("left right", "center") })
+    Check(DecalRules.MenuPosition(input) == expected, "menu alignment normalization");
+
 // Diagnostic paths must remain relative; checks must not silently rewrite actual config.
 Check(DiagnosticPaths.CompiledMaterial("materials/mapdecals/2.vmat") == "materials/mapdecals/2.vmat_c", "compiled material suffix");
 Check(DiagnosticPaths.CompiledMaterial(@"materials\mapdecals\2.vmat") == "materials/mapdecals/2.vmat_c", "normalize diagnostic separators");
@@ -100,5 +107,5 @@ try
     Check(true, "diagnostic callbacks cannot break plugin");
 }
 finally { Directory.Delete(logRoot, true); }
-Console.WriteLine($"PASS: {assertions} assertions (validation, pagination, visibility, SQLite migration/CRUD, diagnostic paths/logging/rotation).");
+Console.WriteLine($"PASS: {assertions} assertions (validation, pagination, visibility, SQLite migration/CRUD, diagnostic paths/logging/rotation, menu alignment).");
 Console.WriteLine("Not covered: CS2 rendering, clicks, resource compilation, network transmission, MySQL/PostgreSQL.");

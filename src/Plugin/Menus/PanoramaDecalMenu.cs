@@ -33,6 +33,7 @@ internal sealed class PanoramaDecalMenu : IDisposable
 
     private readonly Dictionary<int, Session> _sessions = [];
     private readonly HashSet<ulong> _editing = [];
+    private readonly Dictionary<int, string> _positions = [];
     private readonly Guid _chatHook;
     private bool _disposed;
 
@@ -60,8 +61,25 @@ internal sealed class PanoramaDecalMenu : IDisposable
         Close(p.PlayerID);
         Show(p, T(p, "cc.menu.mainmenu.title"), [
             new(T(p, "cc.menu.placedecal.option"), () => OpenMaterials(p)),
-            new(T(p, "cc.menu.editdecal.option"), () => OpenList(p))
+            new(T(p, "cc.menu.editdecal.option"), () => OpenList(p)),
+            new($"{T(p, "cc.panorama.position")}: {T(p, "cc.panorama.position." + Position(p))}", () => OpenPosition(p))
         ]);
+    }
+
+    private string Position(IPlayer p) => _positions.TryGetValue(p.PlayerID, out var value)
+        ? value : DecalRules.MenuPosition(Plugin.Config.CurrentValue.PanoramaMenuPosition);
+
+    private void OpenPosition(IPlayer p)
+    {
+        var current = Position(p);
+        Show(p, T(p, "cc.panorama.position"), new[] { "left", "center", "right" }
+            .Select(position => new Row(T(p, "cc.panorama.position." + position), () =>
+            {
+                if (!CanManage(p)) return;
+                _positions[p.PlayerID] = position;
+                Plugin.DebugEvent("MENU_POSITION", $"playerSlot={p.PlayerID} position={position} scope=current-map-connection");
+                OpenMain(p);
+            }, "k-toggle", position == current)).ToList(), () => OpenMain(p));
     }
 
     private void OpenMaterials(IPlayer p) => Show(p, T(p, "cc.menu.placedecal.title"),
@@ -183,11 +201,14 @@ internal sealed class PanoramaDecalMenu : IDisposable
         hud.SetHasClass(panel, name, enabled ? EHudPanelClassStatus_t.k_eHudPanelClassStatus_HasClass
             : EHudPanelClassStatus_t.k_eHudPanelClassStatus_DoesNotHaveClass);
 
-    private static void Render(IPlayer p, Session s)
+    private void Render(IPlayer p, Session s)
     {
         var hud = s.Hud;
         if (hud == null) return;
         s.Page = Math.Clamp(s.Page, 0, DecalRules.PageCount(s.Rows.Count) - 1);
+        var position = Position(p);
+        foreach (var candidate in new[] { "left", "center", "right" })
+            Class(hud, "utils-dialog", "pos-" + candidate, position == candidate);
         hud.SetDialogVariableString("utils-title", "title", s.Title);
         hud.SetDialogVariableString("utils-desc", "desc", T(p, "cc.panorama.description"));
         hud.SetDialogVariableString("utils-hint", "hint", T(p, "cc.panorama.hint"));
@@ -344,10 +365,17 @@ internal sealed class PanoramaDecalMenu : IDisposable
         }
     }
 
+    internal void OnPlayerDisconnected(int playerId)
+    {
+        Close(playerId);
+        _positions.Remove(playerId);
+    }
+
     internal void Reset()
     {
         foreach (var id in _sessions.Keys.ToArray()) Close(id);
         _editing.Clear();
+        _positions.Clear();
     }
 
     public void Dispose()

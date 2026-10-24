@@ -29,3 +29,9 @@ assert en.keys() == ru.keys(), "Translation key mismatch"
 assert "cc.command.mustbealive" in en
 print(f"PASS: Panorama XML/CSS contract ({len(ids)} unique IDs); EN/RU translation keys match.")
 print("Not covered: Source 2 resource compilation or in-game appearance.")
+
+for position in ("left", "center", "right"):
+    assert f".utils-menu.pos-{position}" in css, f"Missing menu position: {position}"
+for key in ("cc.panorama.position", "cc.panorama.position.left", "cc.panorama.position.center", "cc.panorama.position.right"):
+    assert key in en and key in ru, f"Missing position translation: {key}"
+print("PASS: Menu alignment CSS and EN/RU labels (left/center/right).")
