@@ -112,9 +112,9 @@
       },
       "SwiftlyS2.CS2": {
         "type": "Direct",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.0",
-        "contentHash": "XHwwLlJXHPub5EJvzPis4DNrLfPSwL2TEb3Gj4Ro8KGSK1oy44VfovrbgELfwQh70qs9z5NwnGxwiFRE80cZKA==",
+        "requested": "[1.5.0-beta.26, )",
+        "resolved": "1.5.0-beta.26",
+        "contentHash": "LvRWY7ggv8T79GCwHIk2/ABF+4qud1WBXgnLoDRb+iNYbEQTykI+XInhuPK2U3Fcw0NBgUNkukMfSHJNupcwoQ==",
         "dependencies": {
           "Dapper": "2.1.66",
           "McMaster.NETCore.Plugins": "2.0.0",

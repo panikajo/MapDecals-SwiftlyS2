@@ -23,9 +23,9 @@
 
 ---
 
-## Panorama fork update (1.1.0)
+## Panorama fork update (1.1.1)
 
-This fork targets **SwiftlyS2 1.5.0 stable** and adds a server-driven Panorama editor based on the supplied admin-menu layout. The original menu remains the default until client resources are installed.
+This fork targets **SwiftlyS2 1.5.0-beta.26** (the server version reported during testing) and adds a server-driven Panorama editor based on the supplied admin-menu layout. The original menu remains the default until client resources are installed. Version 1.1.1 fixes the earlier 1.1.0 build requiring stable 1.5.0, which caused the beta.26 loader to reject it.
 
 **[Установка Panorama, совместимость, ограничения и чек-лист проверки](docs/PANORAMA.ru.md)**
 

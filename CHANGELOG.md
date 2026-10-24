@@ -1,3 +1,10 @@
+## [1.1.1]
+
+- Build against SwiftlyS2.CS2 1.5.0-beta.26 to match the reported server installation.
+- Set MinimumAPIVersion to 1.5.0-beta.26; the prior stable minimum rejected this prerelease server.
+- Refresh the dependency lock and installation notes; retain all Panorama functionality.
+- Verified: Release compilation, publish, 61 logic/SQLite assertions. Live server loading still needs confirmation.
+
 ## [1.1.0]
 
 - Target SwiftlyS2 1.5.0 stable; pin direct dependencies and add lock files.

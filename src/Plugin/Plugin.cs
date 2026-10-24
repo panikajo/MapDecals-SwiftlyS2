@@ -11,11 +11,11 @@ namespace MapDecals;
 
 [PluginMetadata(
     Id = "cc.mapdecals",
-    Version = "1.1.0",
+    Version = "1.1.1",
     Name = "Map Decals",
     Author = "Cruze",
     Description = "Place map decals inside map",
-    MinimumAPIVersion = "1.5.0"
+    MinimumAPIVersion = "1.5.0-beta.26"
 )]
 public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
 {
