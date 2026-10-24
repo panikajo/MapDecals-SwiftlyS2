@@ -11,11 +11,11 @@ namespace MapDecals;
 
 [PluginMetadata(
     Id = "cc.mapdecals",
-    Version = "1.0.1-fix",
+    Version = "1.1.4",
     Name = "Map Decals",
     Author = "Cruze",
-    Description = "Place map decals inside map"
-// MinimumAPIVersion = "1.1.5-beta55"
+    Description = "Place map decals inside map",
+    MinimumAPIVersion = "1.5.0-beta.26"
 )]
 public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
 {
@@ -28,6 +28,10 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
     /* ==================== Services ==================== */
     internal static DatabaseService Database { get; private set; } = null!;
     internal static MenuManager MenuManager { get; private set; } = null!;
+    internal static PanoramaDecalMenu Panorama { get; private set; } = null!;
+    private ServiceProvider? _configProvider;
+    internal static bool Running { get; private set; }
+    internal static int MapGeneration { get; private set; }
 
     /* ==================== Shared API ==================== */
     internal IPlayerCookiesAPIv1? PlayerCookiesAPIv1 { get; private set; } = null;
@@ -36,14 +40,20 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
     public override void Load(bool hotReload)
     {
         Core = base.Core;
+        Running = true;
+        MapGeneration++;
 
         InitializeConfigs();
-        RegisterCommands();
-        RegisterGameEvents();
-
+        InitializeDiagnostics(hotReload);
         Database = new DatabaseService("cc_mapdecals", hotReload);
 
         MenuManager = new MenuManager(Database, Config.CurrentValue);
+        Panorama = new PanoramaDecalMenu();
+        RegisterCommands();
+        RegisterGameEvents();
+        Database.Start();
+        foreach (var player in Core.PlayerManager.GetAllPlayers())
+            if (player.IsValid && !player.IsFakeClient) LoadPlayerPrefs(player);
     }
 
     /* ==================== Configuration Loading ==================== */
@@ -66,13 +76,14 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
             .AddOptionsWithValidateOnStart<T>()
             .BindConfiguration(sectionName);
 
-        var provider = services.BuildServiceProvider();
-        return provider.GetRequiredService<IOptionsMonitor<T>>();
+        _configProvider = services.BuildServiceProvider();
+        return _configProvider.GetRequiredService<IOptionsMonitor<T>>();
     }
 
     /* ==================== Shared API ==================== */
     public override void UseSharedInterface(IInterfaceManager interfaceManager)
     {
+        DebugEvent("COOKIES_API", $"available={interfaceManager.HasSharedInterface("Cookies.Player.v1")}");
         if (interfaceManager.HasSharedInterface("Cookies.Player.v1"))
         {
             PlayerCookiesAPIv1 = interfaceManager.GetSharedInterface<IPlayerCookiesAPIv1>("Cookies.Player.v1");
@@ -87,5 +98,18 @@ public sealed partial class Plugin(ISwiftlyCore core) : BasePlugin(core)
     }
 
     /* ==================== Unload ==================== */
-    public override void Unload() { }
+    public override void Unload()
+    {
+        DebugEvent("UNLOAD", $"records={_mapDecals.Count} pendingPlacements={_applyingDecal.Count}");
+        Running = false;
+        MapGeneration++;
+        Core.Event.OnPrecacheResource -= OnPrecacheResource;
+        Core.Event.OnMapLoad -= OnMapLoad;
+        Panorama.Dispose();
+        foreach (var decal in _mapDecals) decal.DeleteEntity();
+        _mapDecals.Clear();
+        _applyingDecal.Clear();
+        _adDecalStatus.Clear();
+        _configProvider?.Dispose();
+    }
 }

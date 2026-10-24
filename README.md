@@ -23,6 +23,36 @@
 
 ---
 
+## Panorama fork update (1.1.4)
+
+**1.1.4:** select **Left / Center / Right** in the Panorama main menu. `MapDecals.PanoramaMenuPosition` sets the default (`left`, `center`, `right`; default `center`). Player overrides last until disconnect or map change. Existing `swiftly_menu_ui` CSS already includes these classes; no UI recompilation is required for that layout.
+
+**1.1.3:** opt-in detailed diagnostics, server GAME material lookup, spawn/transform/database/transmit traces and read-only `!mapdecaldebug [id|paths]` snapshots. **[Диагностика невидимых декалей](docs/DEBUG.ru.md)**.
+
+**1.1.2:** the plugin now defaults to `panorama/layout/custom_game/swiftly_menu_ui.xml` to reuse the existing admin UI resources. Change `PanoramaLayout` in existing configs too; defaults do not overwrite saved values. The included separately named `mapdecals_menu_ui` source assets are optional and still require that explicit path in config.
+
+This fork targets **SwiftlyS2 1.5.0-beta.26** (the server version reported during testing) and adds a server-driven Panorama editor based on the supplied admin-menu layout. The original menu remains the default until client resources are installed. Version 1.1.1 fixes the earlier 1.1.0 build requiring stable 1.5.0, which caused the beta.26 loader to reject it.
+
+**[Установка Panorama, совместимость, ограничения и чек-лист проверки](docs/PANORAMA.ru.md)**
+
+- Separate UI asset names; no overwrite of the admin menu.
+- Six-row pagination, material selection, ping placement, coordinate/size editing, visibility toggles and confirmed deletion.
+- English/Russian translations, validated chat input, permission/ownership checks and serialized Panorama edits.
+- Re-enabled per-player transmit logic; repaired asynchronous load/preference races and entity cleanup. **In-game transmission/rendering still requires server testing.**
+- Fixed .NET 10 package versions, lock files, portable packaging, SQLite/logic tests and CI.
+
+Panorama XML/CSS must be compiled with CS2 Workshop Tools and available in mounted client content (typically Workshop; manual installation is possible for local tests). Shipping the DLL alone does not install the UI. The included files are source assets, not a compiled VPK.
+
+```bash
+dotnet restore src/CS2-MapDecals.csproj --locked-mode
+dotnet run --project tests/MapDecals.Tests -c Release
+dotnet publish src/CS2-MapDecals.csproj -c Release --no-restore
+```
+
+Output: `artifacts/CS2-MapDecals.zip`. Existing database schema and plugin ID are preserved. Back up configuration/database before upgrading. The upstream documentation below is retained for attribution; its old minimum framework version and known-issue note refer to the upstream version, not this fork update.
+
+---
+
 ## ❤️ Support the Project
 
 <div align="center">

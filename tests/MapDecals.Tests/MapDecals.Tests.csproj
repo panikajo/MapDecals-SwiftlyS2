@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Plugin/Diagnostics/DiagnosticLog.cs" Link="DiagnosticLog.cs" />
+    <Compile Include="../../src/Plugin/Functions/DecalRules.cs" Link="DecalRules.cs" />
+    <Compile Include="../../src/Plugin/Database/Migrations/M001_InitTable.cs" Link="M001_InitTable.cs" />
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+    <PackageReference Include="FluentMigrator.Runner.SQLite" Version="8.0.1" />
+  </ItemGroup>
+</Project>

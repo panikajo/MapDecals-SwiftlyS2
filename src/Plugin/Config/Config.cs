@@ -18,6 +18,16 @@ public sealed class CommandConfig
 
 public sealed class PluginConfig
 {
+    public bool DebugLogging { get; set; } = false;
+    public bool DebugLogToFile { get; set; } = true;
+    public bool DebugPlayerTransmit { get; set; } = false;
+
+    // Enable only after the compiled Panorama resources are installed on clients.
+    public bool UsePanoramaMenu { get; set; } = false;
+    // Default horizontal alignment; players can override it until map change/disconnect.
+    public string PanoramaMenuPosition { get; set; } = "center";
+    public string PanoramaLayout { get; set; } = "panorama/layout/custom_game/swiftly_menu_ui.xml";
+
     public List<ConfigDecals> Props { get; set; } = new()
     {
         new() { UniqId = "exampleTexture", Name = "Example Name", Material = "materials/Example/exampleTexture.vmat", ShowPermission = ""},

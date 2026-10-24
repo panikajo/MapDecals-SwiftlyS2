@@ -1,0 +1,29 @@
+name: Validate plugin
+on:
+  pull_request:
+  push:
+    branches: [main, 'feature/**']
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore locked dependencies
+        run: |
+          dotnet restore src/CS2-MapDecals.csproj --locked-mode
+          dotnet restore tests/MapDecals.Tests/MapDecals.Tests.csproj --locked-mode
+      - name: Validate UI contract
+        run: python3 scripts/verify-panorama.py
+      - name: Validate logic and SQLite migration
+        run: dotnet run --project tests/MapDecals.Tests -c Release --no-restore
+      - name: Build and package
+        run: dotnet publish src/CS2-MapDecals.csproj -c Release --no-restore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CS2-MapDecals
+          path: artifacts/CS2-MapDecals.zip

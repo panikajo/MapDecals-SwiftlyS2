@@ -67,8 +67,11 @@ public sealed class MapDecal
     {
         if (IsActive)
         {
+            var generation = Plugin.MapGeneration;
             Plugin.Core.Scheduler.NextWorldUpdate(() =>
             {
+                if (!Plugin.Running || generation != Plugin.MapGeneration || !IsActive
+                    || !Plugin._mapDecals.Contains(this) || GetEntity() != null) return;
                 var entityHandle = Plugin.CreateDecal(Position, Angles, DecalId, Depth, Width, Height, ForceOnVIP, this);
                 if (entityHandle == null) return;
                 Entity = (CHandle<CEnvDecal>)entityHandle;
@@ -93,13 +96,12 @@ public sealed class MapDecal
 
     public void DeleteEntity()
     {
+        // Capture the handle now: a delayed callback must not delete a replacement entity.
+        var handle = Entity;
+        Entity = default;
         Plugin.Core.Scheduler.NextWorldUpdate(() =>
         {
-            var entity = GetEntity();
-
-            if (entity == null) return;
-
-            entity.Despawn();
+            if (handle.IsValid && handle.Value is { IsValid: true } entity) entity.Despawn();
         });
     }
 
